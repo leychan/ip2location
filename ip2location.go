@@ -26,7 +26,7 @@ func init() {
         panic(initError)
     }
     initIp2regionSeacherOnce.Do(func() {
-        cBuffer, _ = xdb.LoadContentFromFile("db/ip2region.xdb")
+        cBuffer, _ = xdb.LoadContentFromFile("data/ip2location-db/ip2region.xdb")
 	    ip2regionSeacher, initError = xdb.NewWithBuffer(cBuffer)
     })
 
