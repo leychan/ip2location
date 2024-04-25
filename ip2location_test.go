@@ -2,6 +2,8 @@ package ip2location
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -39,6 +41,12 @@ func BenchmarkGetIpInfo(b *testing.B) {
 }
 
 func TestGetIpInfo(t *testing.T) {
+	ex, err := os.Executable() // 获取当前执行文件的路径
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	InitIp2regionSeacher(exPath + "/data/ip2location-db/ip2region.xdb")
 	fmt.Println(GetIpInfo("62.210.214.190"))
 	fmt.Println(GetIpInfo("1.202.118.195"))
 	fmt.Println(GetIpInfo("89.185.30.208"))
