@@ -2,7 +2,6 @@ package ip2location
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 
