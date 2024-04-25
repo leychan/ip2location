@@ -1,6 +1,8 @@
 package ip2location
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
@@ -58,16 +60,16 @@ type IPInfo struct {
     Isp     string
 }
 
-func GetIpInfo(ip string) IPInfo {
+func GetIpInfo(ip string) (IPInfo, error) {
     var ipInfo IPInfo
 	res, err := TransIP2RegionStrOffline(ip)
 	if err != nil {
-		return ipInfo
+		return ipInfo, err
 	}
 
 	arr := strings.Split(res, "|")
 	if len(arr) < 5 {
-		return ipInfo
+		return ipInfo, errors.New("res len < 5")
 	}
 	//中国|0|北京|北京市|电信
 	ipInfo = IPInfo{
@@ -78,7 +80,7 @@ func GetIpInfo(ip string) IPInfo {
 		Isp:     arr[4],
 	}	
 
-	return ipInfo
+	return ipInfo, nil
 }
 
 var cBuffer []byte
