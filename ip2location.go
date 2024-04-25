@@ -2,6 +2,8 @@ package ip2location
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -19,7 +21,7 @@ var initError error
 
 func init() {
     initIp2locationDbOnce.Do(func() {
-        ip2locationDB, initError = ip2location.OpenDB("db/lite-9.bin")
+        ip2locationDB, initError = ip2location.OpenDB("data/ip2location-db/lite-9.bin")
     })
 
     if initError != nil {
