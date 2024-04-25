@@ -1,4 +1,4 @@
-module github.com/leychan/ip2loaction
+module github.com/leychan/ip2location
 
 go 1.22
 
