@@ -2,6 +2,7 @@ package ip2location
 
 import (
 	"errors"
+	"net"
 	"strings"
 	"sync"
 
@@ -10,26 +11,36 @@ import (
 )
 
 var (
-	ip2locationDB         *ip2location.DB
-	initIp2locationDbOnce sync.Once
+	ip2locationDB         *ip2location.DB //ipv4 db
+	ip2locationIpv6DB     *ip2location.DB //ipv6 db
+	initIp2locationDbOnce sync.Once // db只初始化1次 db is only initialized once
 )
 
 var (
 	ip2regionSeacher         *xdb.Searcher
-	initIp2regionSeacherOnce sync.Once
+	initIp2regionSeacherOnce sync.Once //searcher只初始化1次 searcher is only initialized once
 )
 
-var initError error
+var initError error //初始化错误
 
-func InitIp2locationDb(path string) {
+// 初始化ip2location数据库 默认初始化ipv4数据库, 如果传入ipv6数据库文件地址,则同时初始化ipv6数据库
+func InitIp2locationDb(path string, pathIpv6 string) {
 	initIp2locationDbOnce.Do(func() {
 		ip2locationDB, initError = ip2location.OpenDB(path)
 		if initError != nil {
 			panic(initError)
 		}
+
+		if pathIpv6 != "" {
+			ip2locationIpv6DB, initError = ip2location.OpenDB(pathIpv6)
+			if initError != nil {
+				panic(initError)
+			}
+		}
 	})
 }
 
+// 国内ip地址信息查询 初始化ip2region数据库, 仅支持ipv4
 func InitIp2regionSeacher(path string) {
 	initIp2regionSeacherOnce.Do(func() {
 		cBuffer, initError = xdb.LoadContentFromFile(path)
@@ -44,29 +55,27 @@ func InitIp2regionSeacher(path string) {
 	})
 }
 
-// func init() {
-// 	initIp2locationDbOnce.Do(func() {
-// 		ip2locationDB, initError = ip2location.OpenDB("data/ip2location-db/lite-9.bin")
-// 	})
-
-// 	if initError != nil {
-// 		panic(initError)
-// 	}
-// 	initIp2regionSeacherOnce.Do(func() {
-// 		cBuffer, _ = xdb.LoadContentFromFile("data/ip2location-db/ip2region.xdb")
-// 		ip2regionSeacher, initError = xdb.NewWithBuffer(cBuffer)
-// 	})
-
-// 	if initError != nil {
-// 		panic(initError)
-// 	}
-// }
-
+// 获取国际ip地址信息
 func GetIpInfoInternational(ip string) (IPInfo, error) {
-	record, err := ip2locationDB.Get_all(ip)
+	ipParsed := net.ParseIP(ip)
+	if ipParsed == nil {
+		return IPInfo{}, errors.New("invalid ip")
+	}
+
+	var record ip2location.IP2Locationrecord
+	var err error
+	
+	// ipv4,从ipv4数据库中获取
+	if ipParsed.To4() != nil {
+		record, err = ip2locationDB.Get_all(ip)
+	} else { // ipv6 从ipv6数据库中获取
+		record, err = ip2locationIpv6DB.Get_all(ip)
+	}
+
 	if err != nil {
 		return IPInfo{}, err
 	}
+
 	return IPInfo{
 		Country: record.Country_short,
 		Region:  record.Region,
@@ -84,6 +93,7 @@ type IPInfo struct {
 	Isp     string
 }
 
+// 获取国内ip地址信息
 func GetIpInfo(ip string) (IPInfo, error) {
 	var ipInfo IPInfo
 	res, err := TransIP2RegionStrOffline(ip)

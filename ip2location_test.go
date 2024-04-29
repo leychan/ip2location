@@ -47,13 +47,21 @@ func TestGetIpInfo(t *testing.T) {
 	}
 	exPath := filepath.Dir(ex)
 	InitIp2regionSeacher(exPath + "/data/ip2location-db/ip2region.xdb")
-	fmt.Println(GetIpInfo("62.210.214.190"))
+	fmt.Println(GetIpInfo("2001:0db8:85a3:0000:0000:8a2e:0370:7334"))
 	fmt.Println(GetIpInfo("1.202.118.195"))
 	fmt.Println(GetIpInfo("89.185.30.208"))
+	fmt.Println(GetIpInfo("103.88.176.0"))
 }
 
 func TestGetIpInfoInternational(t *testing.T) {
-	fmt.Println(GetIpInfoInternational("62.210.214.190"))
+	ex, err := os.Executable() // 获取当前执行文件的路径
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	InitIp2locationDb(exPath + "/data/ip2location-db/lite-9.bin", exPath + "/data/ip2location-db/lite-9-ipv6.bin")
+	fmt.Println(GetIpInfoInternational("2001:19f0:6001:5d0c:5400:4ff:feab:e52e"))
 	fmt.Println(GetIpInfoInternational("1.202.118.195"))
 	fmt.Println(GetIpInfoInternational("89.185.30.208"))
+	fmt.Println(GetIpInfoInternational("103.88.176.1"))
 }
