@@ -1,6 +1,6 @@
 module github.com/leychan/ip2location
 
-go 1.22
+go 1.21
 
 require (
 	github.com/ip2location/ip2location-go/v9 v9.7.0
